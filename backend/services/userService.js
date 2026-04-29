@@ -1,12 +1,15 @@
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
-const { handleRegister, handleLogin } = require("./cognitoService");
+const { handleRegister, handleLogin, updatePassword } = require("./cognitoService");
+const { validateDisplayName, validatePassword } = require("../utils/validators");
 
 exports.registerUser = async (displayName, email, password) => {
-    const cognitoId = await handleRegister(email, password);
+    const validName = validateDisplayName(displayName);
+    const validPassword = validatePassword(password);
+    const cognitoId = await handleRegister(email, validPassword);
 
     const user = await User.create({
-        displayName,
+        displayName: validName,
         email,
         cognitoId,
     });
@@ -25,4 +28,19 @@ exports.loginUser = async (email, password) => {
     const user = await User.findOne({ cognitoId });
 
     return { tokens, user };
+}
+
+exports.updateUser = async (user, displayName, password) => {
+    if (displayName !== undefined) {
+        // user.displayName = displayName;
+        user.displayName = validateDisplayName(displayName);
+        await user.save();
+    }
+
+    if (password) {
+        const validPassword = validatePassword(password);
+        await updatePassword(user.cognitoId, validPassword);
+    }
+
+    return user;
 }

@@ -1,4 +1,4 @@
-const { SignUpCommand, InitiateAuthCommand } = require("@aws-sdk/client-cognito-identity-provider");
+const { SignUpCommand, InitiateAuthCommand, AdminSetUserPasswordCommand } = require("@aws-sdk/client-cognito-identity-provider");
 const client = require("../config/cognito");
 
 exports.handleRegister = async (email, password) => {
@@ -28,4 +28,15 @@ exports.handleLogin = async (email, password) => {
 
     const response = await client.send(command);
     return response.AuthenticationResult;
+}
+
+exports.updatePassword = async (cognitoId, newPassword) => {
+    const command = new AdminSetUserPasswordCommand({
+        UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        Username: cognitoId,
+        Password: newPassword,
+        Permanent: true,
+    });
+
+    await client.send(command);
 }

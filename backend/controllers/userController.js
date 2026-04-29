@@ -1,4 +1,4 @@
-const { registerUser, loginUser } = require("../services/userService");
+const { registerUser, loginUser, updateUser } = require("../services/userService");
 
 exports.register = async (req, res) => {
     try {
@@ -23,5 +23,12 @@ exports.login = async (req, res) => {
 }
 
 exports.updateUser = async (req, res) => {
-    
+    try {
+        const { displayName, password } = req.body;
+        const updatedUser = await updateUser(req.user, displayName, password);
+        res.status(200).json({ message: "User updated successfully", user: updatedUser });
+    } catch (error) {
+        console.error("Update error:", error);
+        res.status(500).json({ message: "Update failed", error: error.message });
+    }
 }

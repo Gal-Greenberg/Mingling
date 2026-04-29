@@ -17,6 +17,10 @@ module.exports.authMiddleware = async (req, res, next) => {
         const payload = await verifier.verify(token);
         const cognitoId = payload.sub;
         req.user = await User.findOne({ cognitoId });
+
+        if (!req.user) {
+            return res.status(401).json({ message: "User not found" });
+        }
         next();
     } catch (error) {
         return res.status(401).json({ message: "Unauthorized" });
